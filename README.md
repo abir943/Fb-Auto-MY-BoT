@@ -46,11 +46,31 @@ node index.js
 4. Add your appState in appState.json
 
 
-# SOURCES
+---
 
-### Noob and Brainless Creator: [Mark Martinez](https://www.facebook.com/share/1BWKFtqg2u/)
+## 📚 SOURCES
 
+> Below is detailed information about the creator of this project — **Aminul Sordar**.
 
- FCA Library: ws3-fca
+### 👤 Personal Details
 
-### free to use my autobot-x-api:[Autobot-x-Api](https://autobot.mark-projects.site/)
+- 🧑‍💻 **Name:** Aminul Sordar  
+- 🌍 **Location:** Rajshahi, Bangladesh  
+- 📧 **Email:** [aminulsordar04@gmail.com](mailto:aminulsordar04@gmail.com)  
+- 🌐 **GitHub:** [github.com/Aminulsordar](https://github.com/Aminulsordar)  
+- 📘 **Facebook:** [facebook.com/profile.php?id=100071880593545](https://www.facebook.com/profile.php?id=100071880593545)
+
+---
+
+### 🧾 Bio Data
+
+> *"Coding is not just my skill – it’s my passion."*
+
+- 💡 A self-taught and enthusiastic developer focused on chatbot systems, Facebook automation, and web app development.
+- 🚀 Skilled in `Node.js`, `JavaScript`, `Express`, and advanced command/event bot architecture.
+- 💬 Regular contributor to the open-source community with an interest in AI, APIs, and full-stack solutions.
+- 🛠️ Creator of **Fb-Auto-MY-BoT** – a powerful and flexible Facebook bot with modular commands, AI integration, and dashboard-ready structure.
+
+---
+
+> 💙 If you find this project useful, please consider giving it a ⭐ on GitHub and connecting with me on Facebook!
