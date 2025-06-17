@@ -6,7 +6,7 @@ const login = require('ws3-fca');
 const scheduleTasks = require('./custom');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -268,6 +268,4 @@ loadCommands();
 loadAPIs();
 startAllBots();
 
-app.listen(PORT, () => {
-    console.log(`🌐 API & Web Server running at http://localhost:${PORT}`);
-});
+module.exports = app;
