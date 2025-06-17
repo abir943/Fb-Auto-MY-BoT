@@ -1,5 +1,5 @@
 {
-  "name": "me",
+  "name": "Fb-Auto-MY-BoT",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -7,15 +7,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/magi17/Fbot-x-APIs.git"
+    "url": "https://github.com/Aminulsordar/Fb-Auto-MY-BoT.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/magi17/Fbot-x-APIs/issues"
+    "url": "https://github.com/Aminulsordar/Fb-Auto-MY-BoT/issues"
   },
-  "homepage": "https://github.com/magi17/Fbot-x-APIs#readme",
+  "homepage": "https://github.com/Aminulsordar/Fb-Auto-MY-BoT#readme",
   "description": "",
   "dependencies": {
     "@google/genai": "^0.7.0",
