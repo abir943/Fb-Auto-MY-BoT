@@ -7,7 +7,7 @@ const startTime = Date.now(); // Save this at the top level for global uptime
 module.exports = {
     name: "uptime",
     usePrefix: false,
-    usage: "uptime",
+    usage: "uptimee",
     description: "Get the bot uptime image",
     version: "1.1",
     admin: false,
