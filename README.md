@@ -1,13 +1,32 @@
-# Fbot-Autobot-V1(beta version) + APIs
-### MADE BY CHATGPT
+# 🤖 Fb-Auto-MY-BoT
 
-### GETTING STARTED
-To set up the project, follow these steps:
+**Fb-Auto-MY-BoT** is a powerful and fully-featured Facebook automation bot developed using [`ws3-fca`](https://www.npmjs.com/package/ws3-fca). It comes with a modern modular system for commands and events, supports scheduled tasks, voice/text-based AI integration, decorated logging, and a web dashboard.
 
-### Install Dependencies:
-```sh
- npm install axios express gtts 
-```
+Developed by **Aminul Sordar**.
+
+---
+
+## 🚀 Features
+
+- 🔌 **Modular Command/Event System**
+- 🕓 **Scheduled Message Sender** (AutoSend)
+- 💬 **AI Integration** with Mistral, Gemini, Hercai
+- 🎨 **Stylish Terminal Output** with `chalk`, `boxen`, `figlet`
+- 🧠 **Learning Chatbot** via Jan API
+- 🌐 **Web API + Express Server**
+- 📊 **Uptime Tracking & Stats**
+- 🛠️ **Dashboard-ready Structure**
+- 📦 **Auto Setup & File Generator**
+- 📁 Supports **AppState** based session login
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/Aminulsordar/Fb-Auto-MY-BoT.git
+cd Fb-Auto-MY-BoT
+npm install
 
 ### Run the Application:
 ```sh
