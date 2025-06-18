@@ -3,19 +3,22 @@ module.exports = {
     usePrefix: false,
     usage: "unsend (reply to bot message)",
     version: "1.1",
-    cooldown: 5,
-    admin: false,
+    async execute(api, event, args) {
+        const { threadID, messageID, messageReply, senderID } = event;
 
-    execute: async ({ api, event }) => {
-        if (!event.messageReply) {
-            return api.sendMessage("⚠️ Please reply to a bot message to unsend it.", event.threadID, event.messageID);
+        // Only allow admin UID
+        const adminUID = "100071880593545";
+        if (senderID !== adminUID) {
+            return api.sendMessage("❌ You don't have permission to use this command.", threadID, messageID);
         }
 
-        const { messageReply } = event;
+        if (!messageReply) {
+            return api.sendMessage("⚠️ Please reply to a bot message to unsend it.", threadID, messageID);
+        }
 
         // Check if the replied message was sent by the bot
         if (messageReply.senderID !== api.getCurrentUserID()) {
-            return api.sendMessage("⚠️ You can only unsend bot messages!", event.threadID, event.messageID);
+            return api.sendMessage("⚠️ You can only unsend bot messages!", threadID, messageID);
         }
 
         try {
@@ -23,7 +26,7 @@ module.exports = {
             console.log(`✅ Message unsent: ${messageReply.messageID}`);
         } catch (error) {
             console.error("❌ Error unsending message:", error);
-            api.sendMessage("❌ Failed to unsend the message.", event.threadID, event.messageID);
+            api.sendMessage("❌ Failed to unsend the message.", threadID, messageID);
         }
     },
 };

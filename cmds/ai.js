@@ -2,40 +2,44 @@ const axios = require("axios");
 
 module.exports = {
     name: "ai",
+    aliases: ["ask", "chatgpt", "gpt"],
     usePrefix: false,
-    usage: "ai <your question> | <reply to an image>",
-    version: "1.2",
-    admin: false,
-    cooldown: 2,
+    description: "Ask ChatGPT a question using the Aryan API.",
+    version: "1.0.0",
+    author: "Aminul Sordar",
 
-    execute: async ({ api, event, args }) => {
+    execute: async (api, event, args) => {
+        const { threadID, messageID, senderID } = event;
+        const question = args.join(" ");
+
+        if (!question) {
+            return api.sendMessage(
+                "❌ Please provide a question to ask.\n\n📌 Example: ai who is Elon Musk?",
+                threadID,
+                messageID
+            );
+        }
+
+        const apiUrl = `https://api-aryan-xyz.vercel.app/chatgpt?ask=${encodeURIComponent(question)}&uid=${senderID}&apikey=ArYAN`;
+
         try {
-            const { threadID } = event;
-            let prompt = args.join(" ");
-            let imageUrl = null;
-            let apiUrl = `https://autobot.mark-projects.site/api/gemini-2.5-pro-vison?ask=${encodeURIComponent(prompt)}`;
+            const res = await axios.get(apiUrl);
+            let answer = res?.data?.result;
 
-            if (event.messageReply && event.messageReply.attachments.length > 0) {
-                const attachment = event.messageReply.attachments[0];
-                if (attachment.type === "photo") {
-                    imageUrl = attachment.url;
-                    apiUrl += `&imagurl=${encodeURIComponent(imageUrl)}`;
-                }
+            // Fix: Convert object to string if needed
+            if (typeof answer === "object") {
+                answer = JSON.stringify(answer, null, 2);
             }
 
-            const loadingMsg = await api.sendMessage("🧠 Gemini is thinking...", threadID);
+            return api.sendMessage(`🤖 ChatGPT:\n${answer}`, threadID, messageID);
 
-            const response = await axios.get(apiUrl);
-            const description = response?.data?.data?.description;
-
-            if (description) {
-                return api.sendMessage(`🤖 **Gemini**\n━━━━━━━━━━━━━━━━\n${description}\n━━━━━━━━━━━━━━━━`, threadID, loadingMsg.messageID);
-            }
-
-            return api.sendMessage("⚠️ No description found in response.", threadID, loadingMsg.messageID);
         } catch (error) {
-            console.error("❌ Gemini Error:", error);
-            return api.sendMessage("❌ Error while contacting Gemini API.", event.threadID);
+            console.error("❌ ChatGPT API Error:", error?.response?.data || error.message);
+            return api.sendMessage(
+                "⚠️ Failed to get a response from ChatGPT. Please try again later.",
+                threadID,
+                messageID
+            );
         }
     }
 };
