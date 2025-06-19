@@ -1,15 +1,11 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-
-const startTime = Date.now(); // Save this at the top level for global uptime
+const startTime = Date.now();
 
 module.exports = {
     name: "uptime",
     usePrefix: false,
     usage: "uptime",
-    description: "Get the bot uptime image",
-    version: "1.1",
+    description: "Get the bot's current uptime statistics",
+    version: "1.2",
     admin: false,
     cooldown: 5,
 
@@ -17,23 +13,44 @@ module.exports = {
         try {
             // Calculate uptime
             const uptimeMs = Date.now() - startTime;
-            const hours = Math.floor(uptimeMs / (1000 * 60 * 60));
+            const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((uptimeMs / (1000 * 60 * 60)) % 24);
             const minutes = Math.floor((uptimeMs / (1000 * 60)) % 60);
             const seconds = Math.floor((uptimeMs / 1000) % 60);
 
-            const imgUrl = `https://kaiz-apis.gleeze.com/api/uptime?instag=brtbrtbrt15&ghub=Jhon-mark23&fb=Mark Martinez&hours=${hours}&minutes=${minutes}&seconds=${seconds}&botname=Fbot-V1.8`;
-            const filePath = path.join(__dirname, "cache", `uptime_${event.senderID}.png`);
+            // Create progress bars
+            const createBar = (value, max, length) => {
+                const percentage = value / max;
+                const progress = Math.round(percentage * length);
+                return '█'.repeat(progress) + '░'.repeat(length - progress);
+            };
 
-            const res = await axios.get(imgUrl, { responseType: "arraybuffer" });
-            fs.writeFileSync(filePath, res.data);
+            // Build the decorative message
+            const message = `
+╔════════════════════════════╗
+║  🚀 FB AUTO-BOT UPTIME STATS  ║
+╠════════════════════════════╣
+║                            ║
+║  ⏳ Running continuously:   ║
+║  ${days > 0 ? `📅 ${days} day${days !== 1 ? 's' : ''}` : ''}${hours > 0 ? `  🕒 ${hours} hour${hours !== 1 ? 's' : ''}` : ''}
+║  ${minutes > 0 ? `⏱️ ${minutes} minute${minutes !== 1 ? 's' : ''}` : ''}  ${seconds} second${seconds !== 1 ? 's' : ''}
+║                            ║
+║  📊 Time Progress:         ║
+║  Hours: [${createBar(hours, 24, 10)}] ${hours}/24
+║  Minutes: [${createBar(minutes, 60, 10)}] ${minutes}/60
+║  Seconds: [${createBar(seconds, 60, 10)}] ${seconds}/60
+║                            ║
+║  🌟 System Stability: 100% ║
+║  🛠️ Version: 1.0.0     ║
+║                            ║
+╚════════════════════════════╝
+✨ Thank you for using FB AUTO-BOT! ✨
+            `;
 
-            api.sendMessage({
-                body: "Fbot-V1.8 uptime",
-                attachment: fs.createReadStream(filePath)
-            }, event.threadID, () => fs.unlinkSync(filePath));
+            api.sendMessage(message, event.threadID, event.messageID);
         } catch (error) {
             console.error("Uptime error:", error);
-            api.sendMessage("Failed to fetch uptime image.", event.threadID, event.messageID);
+            api.sendMessage("❌ Failed to calculate uptime. Please try again later.", event.threadID, event.messageID);
         }
     }
 };
