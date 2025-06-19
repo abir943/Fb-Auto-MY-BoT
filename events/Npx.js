@@ -1,5 +1,5 @@
 module.exports = {
-  name: "message",
+  name: "message1",
   async execute({ api, event }) {
     const { body, threadID, messageID, senderID } = event;
     const message = body?.toLowerCase().trim();
@@ -7,7 +7,7 @@ module.exports = {
 
     const name = global.data?.userName?.get(senderID) || "বন্ধু";
 
-    const tl = [
+    const randomReplies = [
       "আহ শুনা আমার তোমার অলিতে গলিতে উম্মাহ😇😘",
       "কি গো সোনা আমাকে ডাকছ কেনো?",
       "বার বার আমাকে ডাকস কেন😡",
@@ -18,8 +18,6 @@ module.exports = {
       "জাং হাঙা করবা?",
       "জাং বাল ফেলবা 🙂"
     ];
-
-    const rand = tl[Math.floor(Math.random() * tl.length)];
 
     const replies = {
       "love you": "❤️ Aww, I love you too!",
@@ -59,14 +57,13 @@ module.exports = {
       "does the bot fall": "Yes <3"
     };
 
-    // Exact match replies
-    if (replies[message]) {
+    if (replies.hasOwnProperty(message)) {
       return api.sendMessage(replies[message], threadID, messageID);
     }
 
-    // Message starts with "bot" or "Bot"
     if (message.startsWith("bot")) {
-      return api.sendMessage({ body: `${name}, ${rand}` }, threadID, messageID);
+      const randomMsg = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+      return api.sendMessage({ body: `${name}, ${randomMsg}` }, threadID, messageID);
     }
   }
 };
