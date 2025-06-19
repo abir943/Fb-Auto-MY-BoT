@@ -1,191 +1,339 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Add Bot Account Panel</title>  
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6067029417509870" crossorigin="anonymous"></script>  
-    <style>  
-        body {  
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-            background: linear-gradient(135deg, #1d3557, #457b9d);  
-            color: #f1faee;  
-            margin: 0;  
-            padding: 0;  
-        }  
-        header {  
-            background-color: rgba(0,0,0,0.4);  
-            padding: 10px 20px;  
-            display: flex;  
-            align-items: center;  
-            justify-content: space-between;  
-            position: sticky;  
-            top: 0;  
-            z-index: 10;  
-        }  
-        .logo {  
-            font-weight: bold;  
-            font-size: 20px;  
-        }  
-        .hamburger {  
-            font-size: 28px;  
-            cursor: pointer;  
-            display: block;  
-            user-select: none;  
-        }  
-        .nav-links {  
-            display: none;  
-            flex-direction: column;  
-            position: absolute;  
-            top: 60px;  
-            right: 20px;  
-            background-color: rgba(0, 0, 0, 0.9);  
-            border-radius: 8px;  
-            overflow: hidden;  
-        }  
-        .nav-links a {  
-            color: #f1faee;  
-            padding: 10px 20px;  
-            text-decoration: none;  
-            border-bottom: 1px solid rgba(255,255,255,0.1);  
-        }  
-        .nav-links a:hover {  
-            background-color: #2a9d8f;  
-        }  
-        .container {  
-            max-width: 700px;  
-            margin: 30px auto;  
-            background-color: rgba(0, 0, 0, 0.4);  
-            padding: 30px;  
-            border-radius: 12px;  
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);  
-        }  
-        h2 {  
-            text-align: center;  
-        }  
-        textarea, input, button {  
-            width: 100%;  
-            margin-bottom: 20px;  
-            padding: 10px;  
-            border: none;  
-            border-radius: 6px;  
-            font-size: 14px;  
-        }  
-        button {  
-            background-color: #2a9d8f;  
-            color: #fff;  
-            cursor: pointer;  
-            font-size: 16px;  
-            transition: background-color 0.3s;  
-        }  
-        button:hover {  
-            background-color: #21867a;  
-        }  
-        .mini-container {  
-            display: flex;  
-            flex-wrap: wrap;  
-            gap: 10px;  
-            max-height: 300px;  
-            overflow-y: auto;  
-            margin-bottom: 20px;  
-            border: 1px solid rgba(255,255,255,0.2);  
-            padding: 10px;  
-            border-radius: 8px;  
-            background-color: rgba(255,255,255,0.05);  
-        }  
-        .cmd-item {  
-            background-color: rgba(0,0,0,0.2);  
-            border: 1px solid rgba(255,255,255,0.1);  
-            padding: 8px 10px;  
-            border-radius: 6px;  
-            cursor: pointer;  
-            font-size: 13px;  
-            user-select: none;  
-            transition: background-color 0.2s;  
-        }  
-        .cmd-item.selected {  
-            background-color: #2a9d8f;  
-            color: #fff;  
-            border-color: #2a9d8f;  
-        }  
-        #result {  
-            margin-top: 20px;  
-            text-align: center;  
-            font-weight: bold;  
-        }  
-    </style>  
-</head>  
-<body>  
-<header>  
-    <div class="logo">My Bot Panel</div>  
-    <div class="hamburger" onclick="toggleMenu()">☰</div>  
-    <div class="nav-links" id="navLinks">  
-        <a href="index.html">Home</a>  
-        <a href="apis.html">API Docs</a>  
-    </div>  
-</header>  
-  
-<div class="container">  
-    <h2>Add New Bot Account</h2>  
-  
-    <label>AppState (JSON):</label>  
-    <textarea id="appState" placeholder="Paste your appState JSON here"></textarea>  
-  
-    <label>Owner UID (optional):</label>  
-    <input type="text" id="ownerUid" placeholder="Owner Facebook UID">  
-  
-    <label>Select Commands for this bot:</label>  
-    <div class="mini-container" id="commandContainer"></div>  
-  
-    <button onclick="addBot()">Add Bot Account</button>  
-    <div id="result"></div>  
-</div>  
-  
-<script>  
-    function toggleMenu() {  
-        const nav = document.getElementById('navLinks');  
-        nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';  
-    }  
-  
-        async function loadCommands() {
-        const res = await fetch('/api/available-cmds');
-        const cmds = await res.json();
-        const container = document.getElementById('commandContainer');
-
-        cmds.forEach(cmd => {
-            if (cmd.admin === true) return; // Hide admin commands
-
-            const item = document.createElement('div');
-            item.classList.add('cmd-item');
-            item.textContent = cmd.name;
-            item.title = `Usage: ${cmd.usage}`;
-            item.addEventListener('click', () => item.classList.toggle('selected'));
-            container.appendChild(item);
-        });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌟 Aminul's Bot Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+      color: #f1faee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    
-    async function addBot() {  
-        const appStateText = document.getElementById('appState').value.trim();  
-        const ownerUid = document.getElementById('ownerUid').value.trim();  
-        const selectedCommands = Array.from(document.querySelectorAll('.cmd-item.selected')).map(el => el.textContent);  
-  
-        if (!appStateText) return alert('Please enter your appState JSON!');  
-        let appState;  
-        try { appState = JSON.parse(appStateText); } catch { return alert('Invalid appState JSON!'); }  
-  
-        const response = await fetch('/api/add-bot', {  
-            method: 'POST',  
-            headers: { 'Content-Type': 'application/json' },  
-            body: JSON.stringify({ appState, ownerUid, selectedCommands })  
-        });  
-  
-        const result = await response.json();  
-        document.getElementById('result').innerText = result.success  
-            ? `✅ Bot added successfully! Bot ID: ${result.botID}`  
-            : `❌ Failed: ${result.error}`;  
-    }  
-  
-    loadCommands();  
-</script>  
-</body>  
+
+    header {
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .bot-status {
+      background: linear-gradient(135deg, #38b000, #70e000);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 14px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .hamburger {
+      font-size: 26px;
+      cursor: pointer;
+      user-select: none;
+      display: block;
+    }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .nav-links a {
+      padding: 12px 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .nav-links a:hover {
+      background: #2a9d8f;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+      color: #ffd60a;
+    }
+
+    textarea, input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border-radius: 8px;
+      border: none;
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 15px;
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #ff9f1c;
+      color: #000;
+      font-weight: bold;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ffbf69;
+    }
+
+    .mini-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-height: 260px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 25px;
+    }
+
+    .cmd-item {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .cmd-item:hover {
+      background-color: #3a86ff;
+      color: #fff;
+    }
+
+    .cmd-item.selected {
+      background-color: #2a9d8f;
+      color: #fff;
+    }
+
+    #result {
+      text-align: center;
+      margin-top: 25px;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: auto;
+      padding: 20px 10px;
+      background-color: rgba(0,0,0,0.4);
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    footer a {
+      color: #ffd700;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    .info-bar {
+      text-align: center;
+      margin: 20px auto -10px;
+      color: #fcd34d;
+      font-size: 15px;
+    }
+
+    .select-toggle {
+      text-align: right;
+      margin: 10px 0;
+    }
+
+    .select-toggle button {
+      padding: 6px 12px;
+      font-size: 13px;
+      background: #3a86ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .select-toggle button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">💥 Aminul's Bot Panel</div>
+  <div class="bot-status" id="botStatus">Loading...</div>
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="apis.html">📘 API Docs</a>
+  </div>
+</header>
+
+<div class="info-bar" id="timeInfo">🕒 Loading time...</div>
+
+<div class="container">
+  <h2>🤖 Add New Bot Account</h2>
+
+  <label>AppState (JSON):</label>
+  <textarea id="appState" rows="6" placeholder="Paste your appState JSON here"></textarea>
+
+  <label>Owner UID (optional):</label>
+  <input type="text" id="ownerUid" placeholder="Owner Facebook UID"/>
+
+  <label>Select Commands for this bot:</label>
+  <div class="select-toggle">
+    <button id="toggleSelectBtn" onclick="toggleSelectAll()">Select All</button>
+  </div>
+  <div class="mini-container" id="commandContainer"></div>
+
+  <button onclick="addBot()">🚀 Add Bot Account</button>
+  <div id="result"></div>
+</div>
+
+<footer>
+  Made with ❤️ by <a href="https://www.facebook.com/profile.php?id=100071880593545" target="_blank">Aminul</a> |
+  <a href="https://github.com/Aminulsordar" target="_blank">GitHub</a>
+</footer>
+
+<script>
+  function toggleMenu() {
+    const nav = document.getElementById('navLinks');
+    nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  async function loadCommands() {
+    const res = await fetch('/api/available-cmds');
+    const cmds = await res.json();
+    const container = document.getElementById('commandContainer');
+
+    cmds.forEach(cmd => {
+      if (cmd.admin) return;
+
+      const item = document.createElement('div');
+      item.className = 'cmd-item';
+      item.textContent = cmd.name;
+      item.title = `Usage: ${cmd.usage}`;
+      item.onclick = () => item.classList.toggle('selected');
+      container.appendChild(item);
+    });
+  }
+
+  async function loadOnlineStatus() {
+    try {
+      const res = await fetch('/api/bots-online');
+      const data = await res.json();
+      const status = document.getElementById('botStatus');
+      if (data.success) {
+        status.innerText = `🟢 ${data.count} Bot${data.count > 1 ? 's' : ''} Online`;
+      } else {
+        status.innerText = '⚠️ Failed';
+      }
+    } catch {
+      document.getElementById('botStatus').innerText = '❌ Error';
+    }
+  }
+
+  let allSelected = false;
+
+  function toggleSelectAll() {
+    const cmds = document.querySelectorAll('.cmd-item');
+    cmds.forEach(cmd => cmd.classList.toggle('selected', !allSelected));
+    allSelected = !allSelected;
+    document.getElementById('toggleSelectBtn').innerText = allSelected ? "Deselect All" : "Select All";
+  }
+
+  async function addBot() {
+    const appStateText = document.getElementById('appState').value.trim();
+    const ownerUid = document.getElementById('ownerUid').value.trim();
+    const selectedCommands = Array.from(document.querySelectorAll('.cmd-item.selected')).map(el => el.textContent);
+
+    if (!appStateText) return alert('Please enter AppState JSON!');
+    let appState;
+    try { appState = JSON.parse(appStateText); } catch { return alert('Invalid JSON!'); }
+
+    const res = await fetch('/api/add-bot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appState, ownerUid, selectedCommands })
+    });
+
+    const result = await res.json();
+    document.getElementById('result').innerText = result.success
+      ? `✅ Bot added! ID: ${result.botID}`
+      : `❌ Error: ${result.error}`;
+
+    loadOnlineStatus(); // Refresh count
+  }
+
+  function updateTime() {
+    const now = new Date();
+    const options = {
+      timeZone: 'Asia/Dhaka',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour12: true
+    };
+    const formattedTime = new Intl.DateTimeFormat('en-BD', options).format(now);
+    document.getElementById('timeInfo').innerText = `🕒 Bangladesh Time: ${formattedTime}`;
+  }
+
+  setInterval(updateTime, 1000);
+  loadCommands();
+  loadOnlineStatus();
+  updateTime();
+</script>
+</body>
 </html>
