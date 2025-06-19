@@ -1,39 +1,71 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const os = require('os');
+const pidusage = require('pidusage');
+const moment = require('moment');
+require('moment-duration-format');
 
-const startTime = Date.now(); // Save this at the top level for global uptime
+function formatTime(seconds) {
+    return moment.duration(seconds, 'seconds').format("h [hr], m [min], s [sec]");
+}
+
+function byte2mb(bytes) {
+    return (bytes / 1024 / 1024).toFixed(2) + " MB";
+}
+
+function getCpuModel() {
+    const cpus = os.cpus();
+    return cpus.length > 0 ? cpus[0].model : 'Unknown CPU';
+}
+
+function getEmojiLoad(percentage) {
+    if (percentage < 20) return '🟢';
+    if (percentage < 50) return '🟡';
+    if (percentage < 75) return '🟠';
+    return '🔴';
+}
 
 module.exports = {
     name: "uptime",
-    usePrefix: false,
-    usage: "uptime",
-    description: "Get the bot uptime image",
-    version: "1.1",
-    admin: false,
-    cooldown: 5,
-
-    async execute({ api, event }) {
+    version: "2.0.0",
+    usePrefix: true,
+    usage: "/uptime",
+    description: "Displays bot and system uptime with detailed statistics.",
+    
+    execute: async (api, event) => {
         try {
-            // Calculate uptime
-            const uptimeMs = Date.now() - startTime;
-            const hours = Math.floor(uptimeMs / (1000 * 60 * 60));
-            const minutes = Math.floor((uptimeMs / (1000 * 60)) % 60);
-            const seconds = Math.floor((uptimeMs / 1000) % 60);
+            const uptime = process.uptime();
+            const osUptime = os.uptime();
+            const usage = await pidusage(process.pid);
+            const cpuUsage = usage.cpu.toFixed(1);
+            const memUsage = byte2mb(usage.memory);
+            const totalMem = byte2mb(os.totalmem());
+            const freeMem = byte2mb(os.freemem());
+            const currentTime = moment().format('MMMM Do YYYY, h:mm:ss A');
 
-            const imgUrl = `https://kaiz-apis.gleeze.com/api/uptime?instag=brtbrtbrt15&ghub=Jhon-mark23&fb=Mark Martinez&hours=${hours}&minutes=${minutes}&seconds=${seconds}&botname=Fbot-V1.8`;
-            const filePath = path.join(__dirname, "cache", `uptime_${event.senderID}.png`);
+            const msg = 
+`━━━━━━━━━━━━━━━━━━━━━━━
+⏰ 𝗕𝗢𝗧 𝗨𝗣𝗧𝗜𝗠𝗘 𝗦𝗧𝗔𝗧𝗦
+━━━━━━━━━━━━━━━━━━━━━━━
+🤖 𝗕𝗼𝘁 𝗡𝗮𝗺𝗲: 𝐀𝐌𝐈𝐍𝐔𝐋-𝐁𝐎𝐓
+👑 𝗔𝗱𝗺𝗶𝗻: Aminulsordar
+🕓 𝗧𝗶𝗺𝗲: ${currentTime}
+━━━━━━━━━━━━━━━━━━━━━━━
+🔹 𝗕𝗼𝘁 𝗨𝗽𝘁𝗶𝗺𝗲: ${formatTime(uptime)}
+🔹 𝗦𝘆𝘀𝘁𝗲𝗺 𝗨𝗽𝘁𝗶𝗺𝗲: ${formatTime(osUptime)}
+━━━━━━━━━━━━━━━━━━━━━━━
+${getEmojiLoad(cpuUsage)} 𝗖𝗣𝗨 𝗨𝘀𝗮𝗴𝗲: ${cpuUsage}%
+🧠 𝗥𝗔𝗠 𝗨𝘀𝗮𝗴𝗲: ${memUsage} / ${totalMem}
+📉 𝗙𝗿𝗲𝗲 𝗥𝗔𝗠: ${freeMem}
+━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ 𝗢𝗦: ${os.platform().toUpperCase()} | 𝗔𝗿𝗰𝗵: ${os.arch()}
+🧩 𝗖𝗣𝗨: ${getCpuModel()}
+━━━━━━━━━━━━━━━━━━━━━━━
+✨ 𝗧𝗵𝗮𝗻𝗸 𝘆𝗼𝘂 𝗳𝗼𝗿 𝘂𝘀𝗶𝗻𝗴 AminulBot!
+━━━━━━━━━━━━━━━━━━━━━━━`;
 
-            const res = await axios.get(imgUrl, { responseType: "arraybuffer" });
-            fs.writeFileSync(filePath, res.data);
-
-            api.sendMessage({
-                body: "Fbot-V1.8 uptime",
-                attachment: fs.createReadStream(filePath)
-            }, event.threadID, () => fs.unlinkSync(filePath));
-        } catch (error) {
-            console.error("Uptime error:", error);
-            api.sendMessage("Failed to fetch uptime image.", event.threadID, event.messageID);
+            return api.sendMessage(msg, event.threadID, event.messageID);
+        } catch (err) {
+            console.error("❌ Uptime command error:", err);
+            return api.sendMessage("❌ An error occurred while fetching uptime stats.", event.threadID, event.messageID);
         }
     }
 };
