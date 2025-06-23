@@ -1,19 +1,27 @@
+// ======================================
+// 🤖 AMINUL MULTI-BOT SERVER
+// Created by: Aminulsordar
+// Description: Modular, multi-instance Facebook bot server
+// ======================================
+
+// 🌐 Built-In & External Dependencies
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const login = require('ws3-fca');
-const scheduleTasks = require('./custom');
+const scheduleTasks = require('./custom'); // Optional: if you're using task scheduling
 
+// 🧠 App Init
 const app = express();
 const PORT = 3000;
 
-// Middlewares
+// 🛡️ Middleware Setup
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-// Global Maps
+// 🌍 Global Variables for Runtime Storage
 global.events = new Map();
 global.commands = new Map();
 global.activeBots = new Map();
@@ -23,219 +31,193 @@ global.handleEvent = new Map();
 
 const apiRoutes = [];
 
-// Display Server Info
+// 🌟 Server Info Banner
 console.log("\n===============================");
 console.log("🤖 BOT SERVER: AMINUL MULTI-BOT");
 console.log("👤 CREATED BY: Aminulsordar");
-console.log("🌐 API & DASHBOARD: http://localhost:" + PORT);
+console.log(`🌐 API & DASHBOARD: http://localhost:${PORT}`);
 console.log("===============================\n");
 
-// Load Config
+// 🔧 Configuration Loader
 const loadConfig = (filePath) => {
+    if (!fs.existsSync(filePath)) {
+        console.error(`❌ Missing config at ${filePath}`);
+        process.exit(1);
+    }
     try {
-        if (!fs.existsSync(filePath)) {
-            console.error(`❌ Missing ${filePath}! Make sure it exists.`);
-            process.exit(1);
-        }
         return JSON.parse(fs.readFileSync(filePath));
-    } catch (error) {
-        console.error(`❌ Error loading ${filePath}:`, error);
+    } catch (err) {
+        console.error(`❌ Failed to parse config at ${filePath}`, err);
         process.exit(1);
     }
 };
 
-const config = loadConfig("./config.json");
+const config = loadConfig('./config.json');
 const botPrefix = config.prefix || "!";
 
-// Serve Generated Image
-app.get("/api/image", (req, res) => {
-    const imagePath = path.join(__dirname, "./api/generated-image.png");
-    res.sendFile(imagePath, (err) => {
+// 📷 Serve Generated Image File
+app.get('/api/image', (req, res) => {
+    const imagePath = path.join(__dirname, './api/generated-image.png');
+    res.sendFile(imagePath, err => {
         if (err) res.status(404).json({ error: "Image not found" });
     });
 });
 
-// Loaders
+// 🧩 Loader Functions
 const loadEvents = () => {
-    try {
-        const files = fs.readdirSync('./events').filter(f => f.endsWith('.js'));
-        for (const file of files) {
-            const event = require(`./events/${file}`);
-            if (event.name && event.execute) {
-                global.events.set(event.name, event);
-                console.log(`📥 Event Loaded: ${event.name}`);
-            }
+    const files = fs.readdirSync('./events').filter(f => f.endsWith('.js'));
+    for (const file of files) {
+        const event = require(`./events/${file}`);
+        if (event.name && event.execute) {
+            global.events.set(event.name, event);
+            console.log(`📥 Event Loaded: ${event.name}`);
         }
-    } catch (error) {
-        console.error("❌ Error loading events:", error);
     }
 };
 
 const loadCommands = () => {
-    try {
-        const files = fs.readdirSync('./cmds').filter(f => f.endsWith('.js'));
-        for (const file of files) {
-            const command = require(`./cmds/${file}`);
-            if (command.name && command.execute) {
-                global.commands.set(command.name, command);
-                console.log(`📦 Command Loaded: ${command.name}`);
-            }
+    const files = fs.readdirSync('./cmds').filter(f => f.endsWith('.js'));
+    for (const file of files) {
+        const command = require(`./cmds/${file}`);
+        if (command.name && command.execute) {
+            global.commands.set(command.name, command);
+            console.log(`📦 Command Loaded: ${command.name}`);
         }
-    } catch (error) {
-        console.error("❌ Error loading commands:", error);
     }
 };
 
 const loadAPIs = () => {
-    try {
-        const apiPath = path.join(__dirname, 'api');
-        if (!fs.existsSync(apiPath)) return console.warn("⚠️ No 'api/' directory found.");
+    const apiPath = path.join(__dirname, 'api');
+    if (!fs.existsSync(apiPath)) return;
 
-        fs.readdirSync(apiPath).forEach(file => {
-            if (file.endsWith('.js')) {
-                const apiModule = require(`./api/${file}`);
-                const route = apiModule.route || `/api/${apiModule.name}`;
-                const method = apiModule.method?.toLowerCase() || 'get';
+    fs.readdirSync(apiPath).forEach(file => {
+        if (file.endsWith('.js')) {
+            const apiModule = require(`./api/${file}`);
+            const route = apiModule.route || `/api/${apiModule.name}`;
+            const method = apiModule.method?.toLowerCase() || 'get';
 
-                if (!apiModule.name || !apiModule.execute)
-                    throw new Error(`Missing properties in ${file}`);
+            if (!apiModule.name || !apiModule.execute) return;
 
-                app[method](route, async (req, res) => {
-                    try {
-                        await apiModule.execute({ req, res });
-                    } catch (error) {
-                        console.error(`❌ API '${apiModule.name}' Error:`, error);
-                        res.status(500).json({ error: "Internal Server Error" });
-                    }
-                });
+            app[method](route, async (req, res) => {
+                try {
+                    await apiModule.execute({ req, res });
+                } catch (err) {
+                    console.error(`❌ API ${apiModule.name} failed`, err);
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            });
 
-                apiRoutes.push({
-                    name: apiModule.name,
-                    category: apiModule.category || "uncategorized",
-                    route,
-                    method: method.toUpperCase(),
-                    usage: apiModule.usage || "No usage info"
-                });
+            apiRoutes.push({
+                name: apiModule.name,
+                category: apiModule.category || 'uncategorized',
+                route,
+                method: method.toUpperCase(),
+                usage: apiModule.usage || 'No usage provided'
+            });
 
-                console.log(`🌐 API Loaded: ${apiModule.name} [${method.toUpperCase()} ${route}]`);
-            }
-        });
-    } catch (error) {
-        console.error("❌ Error loading APIs:", error);
-    }
+            console.log(`🌐 API Registered: ${apiModule.name} [${method.toUpperCase()}]`);
+        }
+    });
 };
 
-// Config Loaders
+// 💾 Bot State Loaders
 const loadBots = () => {
-    try {
-        if (!fs.existsSync("./appState.json")) return {};
-        return JSON.parse(fs.readFileSync("./appState.json"));
-    } catch (error) {
-        console.error("❌ Error loading appState.json:", error);
-        return {};
-    }
+    if (!fs.existsSync('./appState.json')) return {};
+    return JSON.parse(fs.readFileSync('./appState.json'));
 };
 
 const saveBots = (bots) => {
-    try {
-        fs.writeFileSync("./appState.json", JSON.stringify(bots, null, 2));
-    } catch (error) {
-        console.error("❌ Error saving appState.json:", error);
-    }
+    fs.writeFileSync('./appState.json', JSON.stringify(bots, null, 2));
 };
 
-// Bot Logic
-const startBot = async (botID, botData) => {
-    try {
-        login({ appState: botData.appState }, (err, api) => {
-            if (err) return console.error(`❌ Bot ${botID} login failed:`, err.error || err);
+// 🤖 Bot Login and Event Handling
+const startBot = (botID, botData) => {
+    login({ appState: botData.appState }, (err, api) => {
+        if (err) return console.error(`❌ Failed to login bot ${botID}`, err);
 
-            api.setOptions(config.option);
-            global.activeBots.set(botID, {
-                api,
-                ownerUid: botData.ownerUid || null,
-                selectedCommands: botData.selectedCommands || []
+        api.setOptions(config.option);
+        global.activeBots.set(botID, {
+            api,
+            ownerUid: botData.ownerUid || null,
+            selectedCommands: botData.selectedCommands || []
+        });
+
+        console.log(`✅ Bot Active: ${botID}`);
+
+        // Notify owner on startup
+        if (botData.ownerUid) {
+            api.sendMessage(`🤖 Your bot (${botID}) is online!`, botData.ownerUid, (err) => {
+                if (err) console.error(`❌ Failed to notify ${botData.ownerUid}`);
             });
+        }
 
-            console.log(`🤖 Bot Online: ${botID}`);
+        // 🔄 Event Listener
+        api.listenMqtt(async (err, event) => {
+            if (err) return console.error(`❌ Event error for ${botID}`, err);
 
-            if (botData.ownerUid) {
-                api.sendMessage(`✅ Your bot (${botID}) is now online.`, botData.ownerUid, (err) => {
-                    if (err) console.error(`❌ Couldn't message owner ${botData.ownerUid}:`, err);
-                    else console.log(`📤 Owner ${botData.ownerUid} notified`);
-                });
+            const botInstance = global.activeBots.get(botID);
+
+            // Handle Events
+            if (global.events.has(event.type)) {
+                try {
+                    await global.events.get(event.type).execute({ api, event });
+                } catch (e) {
+                    console.error(`❌ Error in event '${event.type}'`, e);
+                }
             }
 
-            api.listenMqtt(async (err, event) => {
-                if (err) return console.error(`❌ Event error on bot ${botID}:`, err);
+            // Handle Commands
+            if (event.body) {
+                const args = event.body.trim().split(/ +/);
+                const commandName = args.shift().toLowerCase();
 
-                const botInstance = global.activeBots.get(botID);
+                for (const [name, cmd] of global.commands.entries()) {
+                    const allowed = cmd.admin ||
+                        botInstance.selectedCommands.length === 0 ||
+                        botInstance.selectedCommands.includes(name);
 
-                // Run events
-                if (global.events.has(event.type)) {
-                    try {
-                        await global.events.get(event.type).execute({ api, event });
-                    } catch (e) {
-                        console.error(`❌ Error in event '${event.type}' for bot ${botID}:`, e);
-                    }
-                }
+                    const matches = (cmd.usePrefix && event.body.startsWith(botPrefix) && commandName === name)
+                        || (!cmd.usePrefix && commandName === name);
 
-                // Run commands
-                if (event.body) {
-                    const args = event.body.trim().split(/ +/);
-                    const commandName = args.shift().toLowerCase();
-
-                    for (const [name, command] of global.commands) {
-                        const allowed = command.admin ||
-                            botInstance.selectedCommands.length === 0 ||
-                            botInstance.selectedCommands.includes(name);
-
-                        const matches = (command.usePrefix && event.body.startsWith(botPrefix) && commandName === name)
-                            || (!command.usePrefix && commandName === name);
-
-                        if (allowed && matches) {
-                            try {
-                                await command.execute({ api, event, args, ownerUid: botInstance.ownerUid });
-                            } catch (e) {
-                                console.error(`❌ Command '${name}' failed on ${botID}:`, e);
-                            }
-                            return;
+                    if (allowed && matches) {
+                        try {
+                            await cmd.execute({ api, event, args, ownerUid: botInstance.ownerUid });
+                        } catch (e) {
+                            console.error(`❌ Command '${name}' failed on ${botID}`, e);
                         }
+                        return;
                     }
                 }
-            });
+            }
         });
-    } catch (error) {
-        console.error(`❌ Bot ${botID} crashed:`, error);
-        global.activeBots.delete(botID);
-    }
+    });
 };
 
 const startAllBots = () => {
     const bots = loadBots();
-    Object.entries(bots).forEach(([botID, botData]) => {
+    for (const [botID, botData] of Object.entries(bots)) {
         startBot(botID, botData);
-    });
+    }
 };
 
-// API Endpoints
-app.get('/', (req, res) => {
+// 📡 REST API Endpoints
+app.get('/', (_, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/api/list', (req, res) => {
+app.get('/api/list', (_, res) => {
     res.json(apiRoutes);
 });
 
-app.get('/api/bots', (req, res) => {
+app.get('/api/bots', (_, res) => {
     const bots = loadBots();
     res.json(Object.keys(bots).map(botID => ({ botID })));
 });
 
-app.get('/api/available-cmds', (req, res) => {
+app.get('/api/available-cmds', (_, res) => {
     const cmds = Array.from(global.commands.values()).map(cmd => ({
         name: cmd.name,
-        usage: cmd.usage,
+        usage: cmd.usage || "No usage provided",
         admin: cmd.admin || false
     }));
     res.json(cmds);
@@ -243,7 +225,7 @@ app.get('/api/available-cmds', (req, res) => {
 
 app.post('/api/add-bot', (req, res) => {
     const { appState, ownerUid, selectedCommands } = req.body;
-    if (!appState) return res.status(400).json({ error: "appState is required" });
+    if (!appState) return res.status(400).json({ error: "Missing appState" });
 
     const botID = `bot_${Date.now()}`;
     const bots = loadBots();
@@ -258,10 +240,11 @@ app.post('/api/add-bot', (req, res) => {
 
     saveBots(bots);
     startBot(botID, bots[botID]);
+
     res.json({ success: true, botID });
 });
 
-// Boot Function
+// 🚀 Launch Server
 const bootServer = () => {
     loadEvents();
     loadCommands();
@@ -269,7 +252,7 @@ const bootServer = () => {
     startAllBots();
 
     app.listen(PORT, () => {
-        console.log(`🚀 Server Running at: http://localhost:${PORT}`);
+        console.log(`🚀 Server Ready at: http://localhost:${PORT}`);
     });
 };
 
